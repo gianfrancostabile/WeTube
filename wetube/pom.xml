@@ -6,7 +6,7 @@
 
   <groupId>com.projects</groupId>
   <artifactId>wetube</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <packaging>war</packaging>
 
   <name>wetube</name>
@@ -63,6 +63,13 @@
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
       <version>5.4.2.Final</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>5.1.6</version>
     </dependency>
 
   </dependencies>
