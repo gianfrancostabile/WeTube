@@ -1,7 +1,14 @@
 # WeTube
+**FIRST OF ALL => Feel free to Fork, create pull request and load issues. It is OPEN SOURCE :)**
+<br>
+<br>
 
-FIRST OF ALL => Feel free to Fork, create pull request and load issues. It is OPEN SOURCE :)
+## What do I have in my mind? 
+I will recreate the Youtube platform. I want to improve my skills in Java Spring Boot, Hibernate, Unit Test, VueJS, Request between APIs, HTTP Response Codes and a little bit Front End. My idea is create an API with Spring Boot that it is consumed by my frontend application, interacting with it endpoints and getting a response code and a body. 
+<br>
+<br> 
 
+## DEPENDENCIES
 At this moment I have the next Dependencies (**bold** -> required):
   - **Java 8**
   - **Maven 3.5.3**
@@ -11,8 +18,10 @@ At this moment I have the next Dependencies (**bold** -> required):
   - *MySQL* (https://mvnrepository.com/artifact/mysql/mysql-connector-java)
   - *JUnit 4.12* (https://mvnrepository.com/artifact/junit/junit)
   - *Mockito 2.27.0* (https://mvnrepository.com/artifact/org.mockito/mockito-core)
-  
-**What do I have in my mind?** I will recreate the Youtube platform. I want to improve my skills in Java Spring Boot, Hibernate, Unit Test, VueJS, Request between APIs, HTTP Response Codes and a little bit Front End. My idea is create an API with Spring Boot that it is consumed by my frontend application, interacting with it endpoints and getting a response code and a body.
+<br>
+<br>
+
+## VERSIONS
 
 | Version |     Type    | Description |
 |---------|-------------|-------------|
