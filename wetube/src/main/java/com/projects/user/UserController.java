@@ -9,17 +9,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.swing.text.html.Option;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/user")
+@SuppressWarnings({"unused", "unchecked"})
 public class UserController implements IController<Long, UserDTO> {
 
    private Logger logger = LogManager.getLogger(UserController.class);
-   @Autowired private UserService service;
+
+   @Autowired
+   private UserService service;
 
    @Override
    public ResponseEntity post(Collection<UserDTO> values) {
@@ -28,29 +28,24 @@ public class UserController implements IController<Long, UserDTO> {
    }
 
    @Override
-   public ResponseEntity put(UserDTO value) {
-      return new ResponseEntity(HttpStatus.OK);
-   }
-
-   @Override
-   public ResponseEntity put(UserDTO value, Long id) {
-      return new ResponseEntity(HttpStatus.OK);
+   public ResponseEntity<UserDTO> put(UserDTO value) {
+      UserDTO userDTO = service.update(value);
+      return new ResponseEntity(userDTO, HttpStatus.OK);
    }
 
    @Override
    public ResponseEntity delete(Long id) {
+      service.delete(id);
       return new ResponseEntity(HttpStatus.OK);
    }
 
    @Override
-   @SuppressWarnings("unchecked")
    public ResponseEntity<Collection<UserDTO>> get() {
       Collection<UserDTO> serviceResponse = service.get();
       return new ResponseEntity(serviceResponse, HttpStatus.OK);
    }
 
    @Override
-   @SuppressWarnings("unchecked")
    public ResponseEntity<UserDTO> get(Long id) {
       UserDTO serviceResponse = service.get(id);
       return new ResponseEntity(serviceResponse, HttpStatus.OK);

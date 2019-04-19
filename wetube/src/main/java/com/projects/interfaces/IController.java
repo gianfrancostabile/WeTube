@@ -6,19 +6,16 @@ import org.springframework.web.bind.annotation.*;
 import java.io.Serializable;
 import java.util.Collection;
 
-public interface IController<K extends Serializable, V>{
+public interface IController<K extends Serializable, V> {
 
    @PostMapping(value = "/", consumes = "application/json")
    ResponseEntity post(@RequestBody Collection<V> values);
 
    @PutMapping(value = "/", consumes = "application/json")
-   ResponseEntity put(@RequestBody V value);
-
-   @PutMapping(value = "/{id}")
-   ResponseEntity put(@RequestBody V value, @PathVariable("id") K id);
+   ResponseEntity<V> put(@RequestBody V value);
 
    @DeleteMapping(value = "/")
-   ResponseEntity delete(K id);
+   ResponseEntity delete(@RequestParam("id") K id);
 
    @GetMapping(value = "")
    ResponseEntity<Collection<V>> get();

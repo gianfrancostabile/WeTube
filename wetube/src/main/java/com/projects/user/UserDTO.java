@@ -35,6 +35,7 @@ public class UserDTO implements IDTO<Long> {
          .append(", age=").append(getAge())
          .append("}").toString();
    }
+
    @Override
    protected Object clone() {
       return this;

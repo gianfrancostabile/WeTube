@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @Service
 public class UserService implements IService<Long, UserDTO> {
 
-   private GenericRepository repository = new GenericRepository("USERS", Long.class, UserDTO.class);
+   private GenericRepository repository = new GenericRepository(UserDTO.class);
 
    @Override
    public void persist(UserDTO value) {
@@ -26,14 +26,14 @@ public class UserService implements IService<Long, UserDTO> {
    }
 
    @Override
-   public UserDTO merge(UserDTO value) {
-      return (UserDTO) repository.mergeTransactional(value);
+   public UserDTO update(UserDTO value) {
+      return (UserDTO) repository.updateTransactional(value);
    }
 
    @Override
-   public Collection<UserDTO> merge(Collection<UserDTO> values) {
-      Collection<IDTO> repositoryResponse = repository.mergeTransactional(values);
-      Collection<UserDTO> response = repositoryResponse.stream().map(v -> (UserDTO) v).collect(Collectors.toList());
+   public Collection<UserDTO> update(Collection<UserDTO> values) {
+      Collection<IDTO> repositoryResponse = repository.updateTransactional(values);
+      Collection<UserDTO> response = repositoryResponse.stream().map(UserService::map).collect(Collectors.toList());
       return response;
    }
 
@@ -57,7 +57,7 @@ public class UserService implements IService<Long, UserDTO> {
       Collection<UserDTO> response = new ArrayList<>();
       Optional<Collection<IDTO>> repositoryResponse = repository.get();
       if (repositoryResponse.isPresent()) {
-         response = repositoryResponse.get().stream().map(v -> (UserDTO) v).collect(Collectors.toList());
+         response = repositoryResponse.get().stream().map(UserService::map).collect(Collectors.toList());
       }
       return response;
    }
@@ -77,8 +77,12 @@ public class UserService implements IService<Long, UserDTO> {
       Collection<UserDTO> response = new ArrayList<>();
       Optional<Collection<IDTO>> repositoryResponse = repository.get(keys);
       if (repositoryResponse.isPresent()) {
-         response = repositoryResponse.get().stream().map(v -> (UserDTO) v).collect(Collectors.toList());
+         response = repositoryResponse.get().stream().map(UserService::map).collect(Collectors.toList());
       }
       return response;
+   }
+
+   private static UserDTO map(Object o) {
+      return (UserDTO) o;
    }
 }
