@@ -25,5 +25,6 @@ At this moment I have the next Dependencies (**bold** -> required):
 
 | Version |     Type    | Description |
 |---------|-------------|-------------|
-|  1.0.1  | Pre-Release | v1.0.1 Generic DAO, is not tested. Controller Interface with mapped methods by default |
+|  1.1.1  | Release     | v1.1.1 GenericRepository finally works and a log4j.properties file configuration |
 |  1.0.2  | Pre-Release | v1.0.2 Fixing GenericRepository, Controller and Service implementation (POST, GET all, GET one) |
+|  1.0.1  | Pre-Release | v1.0.1 Generic DAO, is not tested. Controller Interface with mapped methods by default |
