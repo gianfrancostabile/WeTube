@@ -4,9 +4,9 @@ import java.io.Serializable;
 import java.util.Collection;
 
 public interface ITransactionalDAO<K extends Serializable, V extends IDTO> {
-   void persistTransactional(V value);
+   void saveTransactional(V value);
 
-   void persistTransactional(Collection<V> values);
+   void saveTransactional(Collection<V> values);
 
    void updateTransactional(V value);
 

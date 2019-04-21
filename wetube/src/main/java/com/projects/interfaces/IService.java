@@ -3,24 +3,26 @@ package com.projects.interfaces;
 import java.io.Serializable;
 import java.util.Collection;
 
-public interface IService<K extends Serializable, V extends IDTO> {
-   void persist(V value);
+public interface IService<T extends IDTO> {
+   void save(T value);
 
-   void persist(Collection<V> values);
+   void save(Collection<T> values);
 
-   V update(V value);
+   void update(T value);
 
-   Collection<V> update(Collection<V> values);
+   void update(Collection<T> values);
 
-   void delete(K key);
+   void delete(Serializable key);
 
-   void delete(V value);
+   void delete(T value);
 
-   void delete(Collection<K> keys);
+   void delete(Collection<Serializable> keys);
 
-   Collection<V> get();
+   Collection<T> get();
 
-   V get(K key);
+   T get(Serializable key);
 
-   Collection<V> get(Collection<K> keys);
+   Collection<T> get(Collection<Serializable> keys);
+
+   Collection<T> get(String filter);
 }

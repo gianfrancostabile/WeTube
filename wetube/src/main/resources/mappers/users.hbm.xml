@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+  "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+  "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+  <class name="com.projects.user.UserDTO" table="USERS">
+    <id name="id" column="ID">
+      <generator class="foreign">
+        <param name="property">account</param>
+      </generator>
+    </id>
+    <property name="nickname" type="string" column="NICKNAME" not-null="true"/>
+    <property name="genre" column="GENRE" not-null="true">
+      <type name="org.hibernate.type.EnumType">
+        <param name="enumClass">com.projects.enums.Genre</param>
+        <param name="useNamed">true</param>
+      </type>
+    </property>
+    <property name="birthday" type="date" column="BIRTHDAY" not-null="true"/>
+    <property name="image" type="string" column="IMAGE"/>
+    <one-to-one name="account" class="com.projects.account.AccountDTO" constrained="true" />
+  </class>
+</hibernate-mapping>

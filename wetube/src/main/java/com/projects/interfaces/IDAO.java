@@ -5,9 +5,9 @@ import java.util.Collection;
 import java.util.Optional;
 
 public interface IDAO<K extends Serializable, V extends IDTO> {
-   void persist(V value);
+   void save(V value);
 
-   void persist(Collection<V> values);
+   void save(Collection<V> values);
 
    void update(V value);
 
@@ -24,4 +24,6 @@ public interface IDAO<K extends Serializable, V extends IDTO> {
    Optional<V> get(K key);
 
    Optional<Collection<V>> get(Collection<K> keys);
+
+   Optional<Collection<V>> get(String filter);
 }

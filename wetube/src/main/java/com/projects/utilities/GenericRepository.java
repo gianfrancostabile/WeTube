@@ -9,7 +9,9 @@ import org.hibernate.HibernateException;
 import org.hibernate.MultiIdentifierLoadAccess;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.springframework.stereotype.Repository;
 
+import javax.persistence.Table;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.validation.constraints.NotNull;
@@ -20,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("unchecked")
 public class GenericRepository implements IDAO, ITransactionalDAO {
    private static Logger logger = LogManager.getLogger(GenericRepository.class);
 
@@ -27,48 +30,77 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
    protected Transaction transaction;
 
    private Class<? extends IDTO> valueClass;
+   private boolean manually;
 
    public GenericRepository(@NotNull Class<? extends IDTO> valueClass) {
       this.valueClass = valueClass;
    }
 
-   public void beginSession() {
-      session = HibernateUtil.getFactory().openSession();
+   /**
+    * Determinate if the session will be closed at the end of each method
+    * @param manually <b>true</b> if the session will be closed at the end of each method. <b>false</b> the otherwise.
+    */
+   public void closeManually(boolean manually) {
+      this.manually = manually;
    }
 
-   public void closeSession() {
-      if (session != null) {
+   /**
+    * Begin a new Session, if it already exists, does nothing
+    * @return generated session
+    */
+   public Session begin() {
+      if (session == null) {
+         session = HibernateUtil.getFactory().openSession();
+      }
+      return session;
+   }
+
+   /**
+    * Destroy the created session and if the attribute manually is false
+    */
+   protected void kill() {
+      if (session != null && !manually) {
+         session.clear();
          session.close();
          session = null;
       }
    }
 
-   @Override
-   public void persist(IDTO value) {
-      logger.debug("GenericRepository::persist(IDTO value)");
-      beginSession();
-      session.persist(value);
-      closeSession();
+   /**
+    * Destroy the created session and changes the attribute manually to false
+    */
+   public void close() {
+      manually = false;
+      kill();
    }
 
    @Override
-   public void persist(Collection values) {
-      logger.debug("GenericRepository::persist(Collection values)");
-      beginSession();
+   public void save(IDTO value) {
+      logger.debug("GenericRepository::save(IDTO value)");
+      begin();
+      session.save(value);
+      kill();
+   }
+
+   @Override
+   public void save(Collection values) {
+      logger.debug("GenericRepository::save(Collection values)");
+      begin();
       for (IDTO value : (Collection<IDTO>) values) {
-         session.persist(value);
+         session.save(value);
       }
-      closeSession();
+      kill();
    }
 
    @Override
-   public void persistTransactional(IDTO value) {
-      logger.debug("GenericRepository::persistTransactional(IDTO value)");
-      beginSession();
+   public void saveTransactional(IDTO value) {
+      logger.debug("GenericRepository::saveTransactional(IDTO value)");
+      begin();
+      closeManually(true);
       transaction = null;
       try {
          transaction = session.beginTransaction();
-         session.persist(value);
+         save(value);
          transaction.commit();
       } catch (HibernateException he) {
          if (transaction != null) {
@@ -76,20 +108,19 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
          }
          logger.error(he.getMessage(), he);
       } finally {
-         closeSession();
+         close();
       }
    }
 
    @Override
-   public void persistTransactional(Collection values) {
-      logger.debug("GenericRepository::persistTransactional(Collection values)");
-      beginSession();
+   public void saveTransactional(Collection values) {
+      logger.debug("GenericRepository::saveTransactional(Collection values)");
+      begin();
+      closeManually(true);
       transaction = null;
       try {
          transaction = session.beginTransaction();
-         for (IDTO value : (Collection<IDTO>) values) {
-            session.persist(value);
-         }
+         save(values);
          transaction.commit();
       } catch (HibernateException he) {
          if (transaction != null) {
@@ -97,36 +128,37 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
          }
          logger.error(he.getMessage(), he);
       } finally {
-         closeSession();
+         close();
       }
    }
 
    @Override
    public void update(IDTO value) {
       logger.debug("GenericRepository::update(IDTO value)");
-      beginSession();
+      begin();
       session.update(value);
-      closeSession();
+      kill();
    }
 
    @Override
    public void update(Collection values) {
       logger.debug("GenericRepository::update(Collection values)");
-      beginSession();
+      begin();
       for (IDTO value : (Collection<IDTO>) values) {
          session.update(value);
       }
-      closeSession();
+      kill();
    }
 
    @Override
    public void updateTransactional(IDTO value) {
       logger.debug("GenericRepository::updateTransactional(IDTO value)");
-      beginSession();
+      begin();
+      closeManually(true);
       transaction = null;
       try {
          transaction = session.beginTransaction();
-         session.update(value);
+         update(value);
          transaction.commit();
       } catch (HibernateException he) {
          if (transaction != null) {
@@ -134,20 +166,19 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
          }
          logger.error(he.getMessage(), he);
       } finally {
-         closeSession();
+         close();
       }
    }
 
    @Override
    public void updateTransactional(Collection values) {
       logger.debug("GenericRepository::updateTransactional(Collection values)");
-      beginSession();
+      begin();
+      closeManually(true);
       transaction = null;
       try {
          transaction = session.beginTransaction();
-         for (IDTO value : (Collection<IDTO>) values) {
-            session.update(value);
-         }
+         session.update(values);
          transaction.commit();
       } catch (HibernateException he) {
          if (transaction != null) {
@@ -155,39 +186,39 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
          }
          logger.error(he.getMessage(), he);
       } finally {
-         closeSession();
+         close();
       }
    }
 
    @Override
    public void delete(Serializable key) {
       logger.debug("GenericRepository::delete(Serializable key)");
-      beginSession();
+      begin();
       IDTO value = session.load(valueClass, key);
       session.delete(value);
-      closeSession();
+      kill();
    }
 
    @Override
    public void delete(Collection keys) {
       logger.debug("GenericRepository::delete(Collection keys)");
-      beginSession();
+      begin();
       for (Serializable key : (Collection<Serializable>) keys) {
          IDTO value = session.load(valueClass, key);
          session.delete(value);
       }
-      closeSession();
+      kill();
    }
 
    @Override
    public void deleteTransactional(Serializable key) {
       logger.debug("GenericRepository::deleteTransactional(Serializable key)");
-      beginSession();
+      begin();
+      closeManually(true);
       transaction = null;
       try {
          transaction = session.beginTransaction();
-         IDTO value = session.load(valueClass, key);
-         session.delete(value);
+         delete(key);
          transaction.commit();
       } catch (HibernateException he) {
          if (transaction != null) {
@@ -195,21 +226,19 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
          }
          logger.error(he.getMessage(), he);
       } finally {
-         closeSession();
+         close();
       }
    }
 
    @Override
    public void deleteTransactional(Collection keys) {
       logger.debug("GenericRepository::deleteTransactional(Collection keys)");
-      beginSession();
+      begin();
+      closeManually(true);
       transaction = null;
       try {
          transaction = session.beginTransaction();
-         for (Serializable key : (Collection<Serializable>) keys) {
-            IDTO value = session.load(valueClass, key);
-            session.delete(value);
-         }
+         delete(keys);
          transaction.commit();
       } catch (HibernateException he) {
          if (transaction != null) {
@@ -217,26 +246,27 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
          }
          logger.error(he.getMessage(), he);
       } finally {
-         closeSession();
+         close();
       }
    }
 
    @Override
    public void delete(IDTO value) {
       logger.debug("GenericRepository::delete(IDTO value)");
-      beginSession();
+      begin();
       session.delete(value);
-      closeSession();
+      kill();
    }
 
    @Override
    public void deleteTransactional(IDTO value) {
       logger.debug("GenericRepository::deleteTransactional(IDTO value)");
-      beginSession();
+      begin();
+      closeManually(true);
       transaction = null;
       try {
          transaction = session.beginTransaction();
-         session.delete(value);
+         delete(value);
          transaction.commit();
       } catch (HibernateException he) {
          if (transaction != null) {
@@ -244,21 +274,20 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
          }
          logger.error(he.getMessage(), he);
       } finally {
-         closeSession();
+         close();
       }
    }
 
    @Override
-   @SuppressWarnings("unchecked")
    public Optional<Collection<IDTO>> get() {
       logger.debug("GenericRepository::get()");
       Optional<Collection<IDTO>> collectionOptional;
-      beginSession();
+      begin();
       CriteriaBuilder builder = session.getCriteriaBuilder();
       CriteriaQuery<? extends IDTO> criteria = builder.createQuery(valueClass);
       criteria.from(valueClass);
       collectionOptional = Optional.of((Collection<IDTO>) session.createQuery(criteria).getResultList());
-      closeSession();
+      kill();
       return collectionOptional;
    }
 
@@ -266,9 +295,9 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
    public Optional<IDTO> get(Serializable key) {
       logger.debug("GenericRepository::get(Serializable key)");
       Optional<IDTO> valueOptional;
-      beginSession();
+      begin();
       valueOptional = Optional.of(session.load(valueClass, key));
-      closeSession();
+      kill();
       return valueOptional;
    }
 
@@ -276,13 +305,28 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
    public Optional<Collection<IDTO>> get(Collection keys) {
       logger.debug("GenericRepository::get(Collection keys)");
       Optional<Collection<IDTO>> collectionOptional;
-      beginSession();
+      begin();
 
       MultiIdentifierLoadAccess<? extends IDTO> multiLoadAccess = session.byMultipleIds(valueClass);
       List<? extends IDTO> results = multiLoadAccess.multiLoad(new ArrayList<Serializable>(keys));
 
       collectionOptional = Optional.of(results.stream().map(v -> valueClass.cast(v)).collect(Collectors.toList()));
-      closeSession();
+      kill();
+      return collectionOptional;
+   }
+
+   @Override
+   public Optional<Collection<IDTO>> get(String filter) {
+      logger.debug("GenericRepository::get(String filter)");
+      Optional<Collection<IDTO>> collectionOptional;
+      begin();
+
+      String QUERY = "from :tableName where :filter";
+      QUERY = QUERY.replace(":tableName", valueClass.getName());
+      QUERY = QUERY.replace(":filter", filter);
+
+      collectionOptional = Optional.of((Collection<IDTO>) session.createQuery(QUERY).getResultList());
+      kill();
       return collectionOptional;
    }
 }

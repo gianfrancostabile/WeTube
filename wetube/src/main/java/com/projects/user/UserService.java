@@ -3,42 +3,43 @@ package com.projects.user;
 import com.projects.interfaces.IDTO;
 import com.projects.interfaces.IService;
 import com.projects.utilities.GenericRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.jws.soap.SOAPBinding;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class UserService implements IService<Long, UserDTO> {
+public class UserService implements IService<UserDTO> {
 
-   private GenericRepository repository = new GenericRepository(UserDTO.class);
+   @Autowired private UserRepository repository;
 
    @Override
-   public void persist(UserDTO value) {
-      repository.persistTransactional(value);
+   public void save(UserDTO value) {
+      repository.saveTransactional(value);
    }
 
    @Override
-   public void persist(Collection<UserDTO> values) {
-      repository.persistTransactional(values);
+   public void save(Collection<UserDTO> values) {
+      repository.saveTransactional(values);
    }
 
    @Override
-   public UserDTO update(UserDTO value) {
-      return (UserDTO) repository.updateTransactional(value);
+   public void update(UserDTO value) {
+      repository.updateTransactional(value);
    }
 
    @Override
-   public Collection<UserDTO> update(Collection<UserDTO> values) {
-      Collection<IDTO> repositoryResponse = repository.updateTransactional(values);
-      Collection<UserDTO> response = repositoryResponse.stream().map(UserService::map).collect(Collectors.toList());
-      return response;
+   public void update(Collection<UserDTO> values) {
+      repository.updateTransactional(values);
    }
 
    @Override
-   public void delete(Long key) {
+   public void delete(Serializable key) {
       repository.deleteTransactional(key);
    }
 
@@ -48,7 +49,7 @@ public class UserService implements IService<Long, UserDTO> {
    }
 
    @Override
-   public void delete(Collection<Long> keys) {
+   public void delete(Collection<Serializable> keys) {
       repository.deleteTransactional(keys);
    }
 
@@ -57,14 +58,14 @@ public class UserService implements IService<Long, UserDTO> {
       Collection<UserDTO> response = new ArrayList<>();
       Optional<Collection<IDTO>> repositoryResponse = repository.get();
       if (repositoryResponse.isPresent()) {
-         response = repositoryResponse.get().stream().map(UserService::map).collect(Collectors.toList());
+         response = repositoryResponse.get().stream().map(UserService::cast).collect(Collectors.toList());
       }
       return response;
    }
 
    @Override
-   public UserDTO get(Long key) {
-      UserDTO response = null;
+   public UserDTO get(Serializable key) {
+      UserDTO response = new UserDTO();
       Optional<IDTO> repositoryResponse = repository.get(key);
       if (repositoryResponse.isPresent()) {
          response = (UserDTO) repositoryResponse.get();
@@ -73,16 +74,26 @@ public class UserService implements IService<Long, UserDTO> {
    }
 
    @Override
-   public Collection<UserDTO> get(Collection<Long> keys) {
+   public Collection<UserDTO> get(Collection<Serializable> keys) {
       Collection<UserDTO> response = new ArrayList<>();
       Optional<Collection<IDTO>> repositoryResponse = repository.get(keys);
       if (repositoryResponse.isPresent()) {
-         response = repositoryResponse.get().stream().map(UserService::map).collect(Collectors.toList());
+         response = repositoryResponse.get().stream().map(UserService::cast).collect(Collectors.toList());
       }
       return response;
    }
 
-   private static UserDTO map(Object o) {
+   @Override
+   public Collection<UserDTO> get(String filter) {
+      Collection<UserDTO> response = new ArrayList<>();
+      Optional<Collection<IDTO>> repositoryResponse = repository.get(filter);
+      if (repositoryResponse.isPresent()) {
+         response = repositoryResponse.get().stream().map(UserService::cast).collect(Collectors.toList());
+      }
+      return response;
+   }
+
+   private static UserDTO cast(Object o) {
       return (UserDTO) o;
    }
 }
