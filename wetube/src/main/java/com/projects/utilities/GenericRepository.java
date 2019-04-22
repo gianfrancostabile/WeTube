@@ -1,17 +1,12 @@
 package com.projects.utilities;
 
-import com.projects.interfaces.IDAO;
-import com.projects.interfaces.IDTO;
-import com.projects.interfaces.ITransactionalDAO;
+import com.projects.interfaces.*;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.hibernate.HibernateException;
 import org.hibernate.MultiIdentifierLoadAccess;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.springframework.stereotype.Repository;
 
-import javax.persistence.Table;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.validation.constraints.NotNull;
@@ -77,205 +72,213 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
    @Override
    public void save(IDTO value) {
       logger.debug("GenericRepository::save(IDTO value)");
-      begin();
-      session.save(value);
-      kill();
+      execute(new ICallbackDAO() {
+         @Override
+         public void execute() {
+            session.save(value);
+         }
+
+         @Override
+         public void onError() { }
+      });
    }
 
    @Override
    public void save(Collection values) {
       logger.debug("GenericRepository::save(Collection values)");
-      begin();
-      for (IDTO value : (Collection<IDTO>) values) {
-         session.save(value);
-      }
-      kill();
+      execute(new ICallbackDAO() {
+         @Override
+         public void execute() {
+            for (IDTO value : (Collection<IDTO>) values) {
+               session.save(value);
+            }
+         }
+
+         @Override
+         public void onError() { }
+      });
    }
 
    @Override
    public void saveTransactional(IDTO value) {
       logger.debug("GenericRepository::saveTransactional(IDTO value)");
-      begin();
-      closeManually(true);
-      transaction = null;
-      try {
-         transaction = session.beginTransaction();
-         save(value);
-         transaction.commit();
-      } catch (HibernateException he) {
-         if (transaction != null) {
-            transaction.rollback();
+      executeTransactional(new ICallbackDAO() {
+         @Override
+         public void execute() {
+            session.save(value);
          }
-         logger.error(he.getMessage(), he);
-      } finally {
-         close();
-      }
+
+         @Override
+         public void onError() { }
+      });
    }
 
    @Override
    public void saveTransactional(Collection values) {
       logger.debug("GenericRepository::saveTransactional(Collection values)");
-      begin();
-      closeManually(true);
-      transaction = null;
-      try {
-         transaction = session.beginTransaction();
-         save(values);
-         transaction.commit();
-      } catch (HibernateException he) {
-         if (transaction != null) {
-            transaction.rollback();
+      executeTransactional(new ICallbackDAO() {
+         @Override
+         public void execute() {
+            for (IDTO value : (Collection<IDTO>) values) {
+               session.save(value);
+            }
          }
-         logger.error(he.getMessage(), he);
-      } finally {
-         close();
-      }
+
+         @Override
+         public void onError() { }
+      });
    }
 
    @Override
    public void update(IDTO value) {
       logger.debug("GenericRepository::update(IDTO value)");
-      begin();
-      session.update(value);
-      kill();
+      execute(new ICallbackDAO() {
+         @Override
+         public void execute() {
+            session.update(value);
+         }
+
+         @Override
+         public void onError() { }
+      });
    }
 
    @Override
    public void update(Collection values) {
       logger.debug("GenericRepository::update(Collection values)");
-      begin();
-      for (IDTO value : (Collection<IDTO>) values) {
-         session.update(value);
-      }
-      kill();
+      execute(new ICallbackDAO() {
+         @Override
+         public void execute() {
+            for (IDTO value : (Collection<IDTO>) values) {
+               session.update(value);
+            }
+         }
+
+         @Override
+         public void onError() { }
+      });
    }
 
    @Override
    public void updateTransactional(IDTO value) {
       logger.debug("GenericRepository::updateTransactional(IDTO value)");
-      begin();
-      closeManually(true);
-      transaction = null;
-      try {
-         transaction = session.beginTransaction();
-         update(value);
-         transaction.commit();
-      } catch (HibernateException he) {
-         if (transaction != null) {
-            transaction.rollback();
+      executeTransactional(new ICallbackDAO() {
+         @Override
+         public void execute() {
+            session.update(value);
          }
-         logger.error(he.getMessage(), he);
-      } finally {
-         close();
-      }
+
+         @Override
+         public void onError() { }
+      });
    }
 
    @Override
    public void updateTransactional(Collection values) {
       logger.debug("GenericRepository::updateTransactional(Collection values)");
-      begin();
-      closeManually(true);
-      transaction = null;
-      try {
-         transaction = session.beginTransaction();
-         session.update(values);
-         transaction.commit();
-      } catch (HibernateException he) {
-         if (transaction != null) {
-            transaction.rollback();
+      executeTransactional(new ICallbackDAO() {
+         @Override
+         public void execute() {
+            for (IDTO value : (Collection<IDTO>) values) {
+               session.update(value);
+            }
          }
-         logger.error(he.getMessage(), he);
-      } finally {
-         close();
-      }
+
+         @Override
+         public void onError() { }
+      });
    }
 
    @Override
    public void delete(Serializable key) {
       logger.debug("GenericRepository::delete(Serializable key)");
-      begin();
-      IDTO value = session.load(valueClass, key);
-      session.delete(value);
-      kill();
+      execute(new ICallbackDAO() {
+         @Override
+         public void execute() {
+            IDTO value = session.load(valueClass, key);
+            session.delete(value);
+         }
+
+         @Override
+         public void onError() { }
+      });
    }
 
    @Override
    public void delete(Collection keys) {
       logger.debug("GenericRepository::delete(Collection keys)");
-      begin();
-      for (Serializable key : (Collection<Serializable>) keys) {
-         IDTO value = session.load(valueClass, key);
-         session.delete(value);
-      }
-      kill();
+      execute(new ICallbackDAO() {
+         @Override
+         public void execute() {
+            for (Serializable key : (Collection<Serializable>) keys) {
+               IDTO value = session.load(valueClass, key);
+               session.delete(value);
+            }
+         }
+
+         @Override
+         public void onError() { }
+      });
    }
 
    @Override
    public void deleteTransactional(Serializable key) {
       logger.debug("GenericRepository::deleteTransactional(Serializable key)");
-      begin();
-      closeManually(true);
-      transaction = null;
-      try {
-         transaction = session.beginTransaction();
-         delete(key);
-         transaction.commit();
-      } catch (HibernateException he) {
-         if (transaction != null) {
-            transaction.rollback();
+      executeTransactional(new ICallbackDAO() {
+         @Override
+         public void execute() {
+            IDTO value = session.load(valueClass, key);
+            session.delete(value);
          }
-         logger.error(he.getMessage(), he);
-      } finally {
-         close();
-      }
+
+         @Override
+         public void onError() { }
+      });
    }
 
    @Override
    public void deleteTransactional(Collection keys) {
       logger.debug("GenericRepository::deleteTransactional(Collection keys)");
-      begin();
-      closeManually(true);
-      transaction = null;
-      try {
-         transaction = session.beginTransaction();
-         delete(keys);
-         transaction.commit();
-      } catch (HibernateException he) {
-         if (transaction != null) {
-            transaction.rollback();
+      executeTransactional(new ICallbackDAO() {
+         @Override
+         public void execute() {
+            for (Serializable key : (Collection<Serializable>) keys) {
+               IDTO value = session.load(valueClass, key);
+               session.delete(value);
+            }
          }
-         logger.error(he.getMessage(), he);
-      } finally {
-         close();
-      }
+
+         @Override
+         public void onError() { }
+      });
    }
 
    @Override
    public void delete(IDTO value) {
       logger.debug("GenericRepository::delete(IDTO value)");
-      begin();
-      session.delete(value);
-      kill();
+      execute(new ICallbackDAO() {
+         @Override
+         public void execute() {
+            session.delete(value);
+         }
+
+         @Override
+         public void onError() { }
+      });
    }
 
    @Override
    public void deleteTransactional(IDTO value) {
       logger.debug("GenericRepository::deleteTransactional(IDTO value)");
-      begin();
-      closeManually(true);
-      transaction = null;
-      try {
-         transaction = session.beginTransaction();
-         delete(value);
-         transaction.commit();
-      } catch (HibernateException he) {
-         if (transaction != null) {
-            transaction.rollback();
+      executeTransactional(new ICallbackDAO() {
+         @Override
+         public void execute() {
+            session.delete(value);
          }
-         logger.error(he.getMessage(), he);
-      } finally {
-         close();
-      }
+
+         @Override
+         public void onError() { }
+      });
    }
 
    @Override
@@ -328,5 +331,45 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
       collectionOptional = Optional.of((Collection<IDTO>) session.createQuery(QUERY).getResultList());
       kill();
       return collectionOptional;
+   }
+
+   /**
+    * Skeleton of a typical non-transactional method
+    * @param _callback
+    */
+   protected final void execute(ICallbackDAO _callback) {
+      begin();
+      closeManually(true);
+      try {
+         _callback.execute();
+      } catch (Exception e) {
+         logger.error(e.getMessage(), e);
+         _callback.onError();
+      } finally {
+         close();
+      }
+   }
+
+   /**
+    * Skeleton of a typical transactional method
+    * @param _callback
+    */
+   protected final void executeTransactional(ICallbackDAO _callback) {
+      begin();
+      closeManually(true);
+      transaction = null;
+      try {
+         transaction = session.beginTransaction();
+         _callback.execute();
+         transaction.commit();
+      } catch (Exception e) {
+         if (transaction != null) {
+            transaction.rollback();
+         }
+         logger.error(e.getMessage(), e);
+         _callback.onError();
+      } finally {
+         close();
+      }
    }
 }

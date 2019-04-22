@@ -1,11 +1,11 @@
 package com.projects.user;
 
 import com.projects.account.AccountDTO;
+import com.projects.interfaces.ICallbackDAO;
 import com.projects.interfaces.IDTO;
 import com.projects.utilities.GenericRepository;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.hibernate.HibernateException;
 import org.springframework.stereotype.Repository;
 
 import java.io.Serializable;
@@ -22,68 +22,80 @@ public class UserRepository extends GenericRepository {
    @Override
    public void save(IDTO value) {
       logger.debug("UserRepository::save(IDTO value)");
-      begin();
-      UserDTO userDTO = (UserDTO) value;
-      AccountDTO accountDTO = userDTO.getAccount();
+      execute(new ICallbackDAO() {
+         @Override
+         public void execute() {
+            UserDTO userDTO = (UserDTO) value;
+            AccountDTO accountDTO = userDTO.getAccount();
 
-      Serializable accountId = session.save(accountDTO);
-      userDTO.getAccount().setId(Long.parseLong(accountId.toString()));
-      session.save(userDTO);
-      kill();
+            Serializable accountId = session.save(accountDTO);
+            userDTO.getAccount().setId(Long.parseLong(accountId.toString()));
+            session.save(userDTO);
+         }
+
+         @Override
+         public void onError() { }
+      });
    }
 
    @Override
    public void save(Collection values) {
       logger.debug("UserRepository::save(Collection values)");
-      begin();
-      for (IDTO value : (Collection<IDTO>) values) {
-         UserDTO userDTO = (UserDTO) value;
-         AccountDTO accountDTO = userDTO.getAccount();
+      execute(new ICallbackDAO() {
+         @Override
+         public void execute() {
+            for (IDTO value : (Collection<IDTO>) values) {
+               UserDTO userDTO = (UserDTO) value;
+               AccountDTO accountDTO = userDTO.getAccount();
 
-         Serializable accountId = session.save(accountDTO);
-         userDTO.getAccount().setId(Long.parseLong(accountId.toString()));
-         session.save(userDTO);
-      }
-      kill();
+               Serializable accountId = session.save(accountDTO);
+               userDTO.getAccount().setId(Long.parseLong(accountId.toString()));
+               session.save(userDTO);
+            }
+         }
+
+         @Override
+         public void onError() { }
+      });
    }
 
    @Override
    public void saveTransactional(IDTO value) {
       logger.debug("UserRepository::saveTransactional(IDTO value)");
-      begin();
-      closeManually(true);
-      transaction = null;
-      try {
-         transaction = session.beginTransaction();
-         save(value);
-         transaction.commit();
-      } catch (Exception he) {
-         if (transaction != null) {
-            transaction.rollback();
+      executeTransactional(new ICallbackDAO() {
+         @Override
+         public void execute() {
+            UserDTO userDTO = (UserDTO) value;
+            AccountDTO accountDTO = userDTO.getAccount();
+
+            Serializable accountId = session.save(accountDTO);
+            userDTO.getAccount().setId(Long.parseLong(accountId.toString()));
+            session.save(userDTO);
          }
-         logger.error(he.getMessage(), he);
-      } finally {
-         close();
-      }
+
+         @Override
+         public void onError() { }
+      });
    }
 
    @Override
    public void saveTransactional(Collection values) {
       logger.debug("UserRepository::saveTransactional(Collection values)");
-      begin();
-      closeManually(true);
-      transaction = null;
-      try {
-         transaction = session.beginTransaction();
-         save(values);
-         transaction.commit();
-      } catch (Exception he) {
-         if (transaction != null) {
-            transaction.rollback();
+      executeTransactional(new ICallbackDAO() {
+         @Override
+         public void execute() {
+            for (IDTO value : (Collection<IDTO>) values) {
+               UserDTO userDTO = (UserDTO) value;
+               AccountDTO accountDTO = userDTO.getAccount();
+
+               Serializable accountId = session.save(accountDTO);
+               userDTO.getAccount().setId(Long.parseLong(accountId.toString()));
+               session.save(userDTO);
+            }
          }
-         logger.error(he.getMessage(), he);
-      } finally {
-         close();
-      }
+
+         @Override
+         public void onError() { }
+      });
    }
 }
