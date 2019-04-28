@@ -26,6 +26,7 @@ At this moment I have the next Dependencies (**bold** -> required):
 
 | Version |     Type    | Description | Commit |
 |---------|-------------|-------------|--------|
+|  1.1.4  | Release     | v1.1.4 Repository and Hibernate fixs, UserRepository class has been completed | [db70615](https://github.com/gianfrancostabile/WeTube/commit/db70615aaf1aa3381ee894b5c4405f3bd29a0e4a)
 |  1.1.2  | Release     | v1.1.2 Upgrade to Generic Repository; Mappers added; User and Account models relationaship | [598f58a](https://github.com/gianfrancostabile/WeTube/commit/598f58a61d42734bf80a3386612e3ff353e30f59) |
 |  1.1.1  | Release     | v1.1.1 GenericRepository finally works and a log4j.properties file configuration | [58b6a40](https://github.com/gianfrancostabile/WeTube/commit/58b6a4046e33c267e181a27e1b58acf171f62aee) |
 |  1.0.2  | Pre-Release | v1.0.2 Fixing GenericRepository, Controller and Service implementation (POST, GET all, GET one) | [9d3d9e5](https://github.com/gianfrancostabile/WeTube/commit/9d3d9e541056604b8fb70d85d986459621e99357) |
