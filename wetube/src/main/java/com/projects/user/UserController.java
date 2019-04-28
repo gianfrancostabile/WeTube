@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping(value = "/user")
 @SuppressWarnings({"unused", "unchecked"})
-public class UserController implements IController<User, UserWrapper> {
+public class UserController implements IController<UserDTO, UserWrapper> {
 
    private Logger logger = LogManager.getLogger(UserController.class);
 
@@ -28,16 +28,14 @@ public class UserController implements IController<User, UserWrapper> {
    private UserMapper mapper;
 
    @Override
-   public ResponseEntity post(Collection<User> values) {
-      List<UserDTO> mappedValue = values.stream().map(v -> mapper.fromDOMAINtoDTO(0, v)).collect(Collectors.toList());
-      service.save(mappedValue);
+   public ResponseEntity post(Collection<UserDTO> values) {
+      service.save(values);
       return new ResponseEntity(HttpStatus.CREATED);
    }
 
    @Override
-   public ResponseEntity<User> put(Serializable key, User value) {
-      UserDTO mappedValue = mapper.fromDOMAINtoDTO(key, value);
-      service.update(mappedValue);
+   public ResponseEntity<UserDTO> put(UserDTO value) {
+      service.update(value);
       return new ResponseEntity(HttpStatus.OK);
    }
 

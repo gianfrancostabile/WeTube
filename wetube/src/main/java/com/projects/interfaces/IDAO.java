@@ -19,11 +19,11 @@ public interface IDAO<K extends Serializable, V extends IDTO> {
 
    void delete(Collection<K> keys);
 
-   Optional<Collection<V>> get();
+   Optional<Collection<V>> find();
 
-   Optional<V> get(K key);
+   Optional<V> find(K key);
 
-   Optional<Collection<V>> get(Collection<K> keys);
+   Optional<Collection<V>> find(Collection<K> keys);
 
-   Optional<Collection<V>> get(String filter);
+   Optional<Collection<V>> find(String filter);
 }

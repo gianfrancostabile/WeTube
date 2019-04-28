@@ -1,6 +1,5 @@
 package com.projects.user;
 
-import com.projects.account.AccountDTO;
 import com.projects.account.AccountMapper;
 import com.projects.account.AccountService;
 import com.projects.interfaces.IMapper;
@@ -11,8 +10,10 @@ import java.io.Serializable;
 
 @Component
 public class UserMapper implements IMapper<User, UserDTO, UserWrapper> {
-   @Autowired private AccountService accountService;
-   @Autowired private AccountMapper accountMapper;
+   @Autowired
+   private AccountService accountService;
+   @Autowired
+   private AccountMapper accountMapper;
 
    @Override
    public User fromDTOtoDOMAIN(UserDTO dto) {

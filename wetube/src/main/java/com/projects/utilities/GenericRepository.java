@@ -1,6 +1,9 @@
 package com.projects.utilities;
 
-import com.projects.interfaces.*;
+import com.projects.interfaces.ICallbackDAO;
+import com.projects.interfaces.IDAO;
+import com.projects.interfaces.IDTO;
+import com.projects.interfaces.ITransactionalDAO;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.hibernate.MultiIdentifierLoadAccess;
@@ -18,14 +21,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unchecked")
-public class GenericRepository implements IDAO, ITransactionalDAO {
+public class GenericRepository<K extends Serializable> implements IDAO<K, IDTO>, ITransactionalDAO<K, IDTO> {
    private static Logger logger = LogManager.getLogger(GenericRepository.class);
 
    protected Session session;
    protected Transaction transaction;
 
-   private Class<? extends IDTO> valueClass;
-   private boolean manually;
+   protected Class<? extends IDTO> valueClass;
+   protected boolean manually;
 
    public GenericRepository(@NotNull Class<? extends IDTO> valueClass) {
       this.valueClass = valueClass;
@@ -33,6 +36,7 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
 
    /**
     * Determinate if the session will be closed at the end of each method
+    *
     * @param manually <b>true</b> if the session will be closed at the end of each method. <b>false</b> the otherwise.
     */
    public void closeManually(boolean manually) {
@@ -41,6 +45,7 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
 
    /**
     * Begin a new Session, if it already exists, does nothing
+    *
     * @return generated session
     */
    public Session begin() {
@@ -79,7 +84,8 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
          }
 
          @Override
-         public void onError() { }
+         public void onError() {
+         }
       });
    }
 
@@ -95,7 +101,8 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
          }
 
          @Override
-         public void onError() { }
+         public void onError() {
+         }
       });
    }
 
@@ -109,7 +116,8 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
          }
 
          @Override
-         public void onError() { }
+         public void onError() {
+         }
       });
    }
 
@@ -125,7 +133,8 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
          }
 
          @Override
-         public void onError() { }
+         public void onError() {
+         }
       });
    }
 
@@ -139,7 +148,8 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
          }
 
          @Override
-         public void onError() { }
+         public void onError() {
+         }
       });
    }
 
@@ -155,7 +165,8 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
          }
 
          @Override
-         public void onError() { }
+         public void onError() {
+         }
       });
    }
 
@@ -169,7 +180,8 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
          }
 
          @Override
-         public void onError() { }
+         public void onError() {
+         }
       });
    }
 
@@ -185,22 +197,24 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
          }
 
          @Override
-         public void onError() { }
+         public void onError() {
+         }
       });
    }
 
    @Override
-   public void delete(Serializable key) {
-      logger.debug("GenericRepository::delete(Serializable key)");
+   public void delete(K key) {
+      logger.debug("GenericRepository::delete(K key)");
       execute(new ICallbackDAO() {
          @Override
          public void execute() {
-            IDTO value = session.load(valueClass, key);
+            IDTO value = session.find(valueClass, key);
             session.delete(value);
          }
 
          @Override
-         public void onError() { }
+         public void onError() {
+         }
       });
    }
 
@@ -210,29 +224,31 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
       execute(new ICallbackDAO() {
          @Override
          public void execute() {
-            for (Serializable key : (Collection<Serializable>) keys) {
-               IDTO value = session.load(valueClass, key);
+            for (K key : (Collection<K>) keys) {
+               IDTO value = session.find(valueClass, key);
                session.delete(value);
             }
          }
 
          @Override
-         public void onError() { }
+         public void onError() {
+         }
       });
    }
 
    @Override
-   public void deleteTransactional(Serializable key) {
-      logger.debug("GenericRepository::deleteTransactional(Serializable key)");
+   public void deleteTransactional(K key) {
+      logger.debug("GenericRepository::deleteTransactional(K key)");
       executeTransactional(new ICallbackDAO() {
          @Override
          public void execute() {
-            IDTO value = session.load(valueClass, key);
+            IDTO value = session.find(valueClass, key);
             session.delete(value);
          }
 
          @Override
-         public void onError() { }
+         public void onError() {
+         }
       });
    }
 
@@ -242,14 +258,15 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
       executeTransactional(new ICallbackDAO() {
          @Override
          public void execute() {
-            for (Serializable key : (Collection<Serializable>) keys) {
-               IDTO value = session.load(valueClass, key);
+            for (K key : (Collection<K>) keys) {
+               IDTO value = session.find(valueClass, key);
                session.delete(value);
             }
          }
 
          @Override
-         public void onError() { }
+         public void onError() {
+         }
       });
    }
 
@@ -263,7 +280,8 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
          }
 
          @Override
-         public void onError() { }
+         public void onError() {
+         }
       });
    }
 
@@ -277,13 +295,14 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
          }
 
          @Override
-         public void onError() { }
+         public void onError() {
+         }
       });
    }
 
    @Override
-   public Optional<Collection<IDTO>> get() {
-      logger.debug("GenericRepository::get()");
+   public Optional<Collection<IDTO>> find() {
+      logger.debug("GenericRepository::find()");
       Optional<Collection<IDTO>> collectionOptional;
       begin();
       CriteriaBuilder builder = session.getCriteriaBuilder();
@@ -295,23 +314,23 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
    }
 
    @Override
-   public Optional<IDTO> get(Serializable key) {
-      logger.debug("GenericRepository::get(Serializable key)");
+   public Optional<IDTO> find(K key) {
+      logger.debug("GenericRepository::find(K key)");
       Optional<IDTO> valueOptional;
       begin();
-      valueOptional = Optional.of(session.load(valueClass, key));
+      valueOptional = Optional.of(session.find(valueClass, key));
       kill();
       return valueOptional;
    }
 
    @Override
-   public Optional<Collection<IDTO>> get(Collection keys) {
-      logger.debug("GenericRepository::get(Collection keys)");
+   public Optional<Collection<IDTO>> find(Collection keys) {
+      logger.debug("GenericRepository::find(Collection keys)");
       Optional<Collection<IDTO>> collectionOptional;
       begin();
 
       MultiIdentifierLoadAccess<? extends IDTO> multiLoadAccess = session.byMultipleIds(valueClass);
-      List<? extends IDTO> results = multiLoadAccess.multiLoad(new ArrayList<Serializable>(keys));
+      List<? extends IDTO> results = multiLoadAccess.multiLoad(new ArrayList<K>(keys));
 
       collectionOptional = Optional.of(results.stream().map(v -> valueClass.cast(v)).collect(Collectors.toList()));
       kill();
@@ -319,8 +338,8 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
    }
 
    @Override
-   public Optional<Collection<IDTO>> get(String filter) {
-      logger.debug("GenericRepository::get(String filter)");
+   public Optional<Collection<IDTO>> find(String filter) {
+      logger.debug("GenericRepository::find(String filter)");
       Optional<Collection<IDTO>> collectionOptional;
       begin();
 
@@ -335,6 +354,7 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
 
    /**
     * Skeleton of a typical non-transactional method
+    *
     * @param _callback
     */
    protected final void execute(ICallbackDAO _callback) {
@@ -352,6 +372,7 @@ public class GenericRepository implements IDAO, ITransactionalDAO {
 
    /**
     * Skeleton of a typical transactional method
+    *
     * @param _callback
     */
    protected final void executeTransactional(ICallbackDAO _callback) {

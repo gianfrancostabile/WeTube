@@ -14,7 +14,15 @@ import java.util.stream.Collectors;
 @Service
 public class AccountService implements IService<AccountDTO> {
 
-   private GenericRepository repository = new GenericRepository(AccountDTO.class);
+   private GenericRepository<Long> repository = new GenericRepository<>(AccountDTO.class);
+
+   private static AccountDTO cast(Object o) {
+      return (AccountDTO) o;
+   }
+
+   private static Long keyCast(Serializable o) {
+      return Long.parseLong(o.toString());
+   }
 
    @Override
    public void save(AccountDTO value) {
@@ -38,7 +46,7 @@ public class AccountService implements IService<AccountDTO> {
 
    @Override
    public void delete(Serializable key) {
-      repository.delete(key);
+      repository.delete(keyCast(key.toString()));
    }
 
    @Override
@@ -48,13 +56,14 @@ public class AccountService implements IService<AccountDTO> {
 
    @Override
    public void delete(Collection<Serializable> keys) {
-      repository.delete(keys);
+      Collection<Long> keysMapped = keys.stream().map(AccountService::keyCast).collect(Collectors.toList());
+      repository.delete(keysMapped);
    }
 
    @Override
    public Collection<AccountDTO> get() {
       Collection<AccountDTO> response = new ArrayList<>();
-      Optional<Collection<IDTO>> repositoryResponse = repository.get();
+      Optional<Collection<IDTO>> repositoryResponse = repository.find();
       if (repositoryResponse.isPresent()) {
          response = repositoryResponse.get().stream().map(AccountService::cast).collect(Collectors.toList());
       }
@@ -64,7 +73,7 @@ public class AccountService implements IService<AccountDTO> {
    @Override
    public AccountDTO get(Serializable key) {
       AccountDTO response = new AccountDTO();
-      Optional<IDTO> repositoryResponse = repository.get(key);
+      Optional<IDTO> repositoryResponse = repository.find(keyCast(key.toString()));
       if (repositoryResponse.isPresent()) {
          response = (AccountDTO) repositoryResponse.get();
       }
@@ -74,7 +83,8 @@ public class AccountService implements IService<AccountDTO> {
    @Override
    public Collection<AccountDTO> get(Collection<Serializable> keys) {
       Collection<AccountDTO> response = new ArrayList<>();
-      Optional<Collection<IDTO>> repositoryResponse = repository.get(keys);
+      Collection<Long> keysMapped = keys.stream().map(AccountService::keyCast).collect(Collectors.toList());
+      Optional<Collection<IDTO>> repositoryResponse = repository.find(keysMapped);
       if (repositoryResponse.isPresent()) {
          response = repositoryResponse.get().stream().map(AccountService::cast).collect(Collectors.toList());
       }
@@ -84,14 +94,10 @@ public class AccountService implements IService<AccountDTO> {
    @Override
    public Collection<AccountDTO> get(String filter) {
       Collection<AccountDTO> response = new ArrayList<>();
-      Optional<Collection<IDTO>> repositoryResponse = repository.get(filter);
+      Optional<Collection<IDTO>> repositoryResponse = repository.find(filter);
       if (repositoryResponse.isPresent()) {
          response = repositoryResponse.get().stream().map(AccountService::cast).collect(Collectors.toList());
       }
       return response;
-   }
-
-   private static AccountDTO cast(Object o) {
-      return (AccountDTO) o;
    }
 }

@@ -18,6 +18,6 @@
     </property>
     <property name="birthday" type="date" column="BIRTHDAY" not-null="true"/>
     <property name="image" type="string" column="IMAGE"/>
-    <one-to-one name="account" class="com.projects.account.AccountDTO" constrained="true" />
+    <one-to-one name="account" class="com.projects.account.AccountDTO" constrained="true" lazy="false" fetch="join"/>
   </class>
 </hibernate-mapping>
